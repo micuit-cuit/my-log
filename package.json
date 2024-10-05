@@ -4,9 +4,9 @@
   "description": "mi-log is a simple logger for nodejs and browser.",
   "main": "log.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "micuit-cuit",
   "license": "ISC"
 }
