@@ -1,0 +1,12 @@
+{
+  "name": "mi-log",
+  "version": "1.0.0",
+  "description": "mi-log is a simple logger for nodejs and browser.",
+  "main": "log.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
