@@ -17,7 +17,7 @@ mi-log is a simple logger for nodejs and browser.
 ![use in terminal](image.png)
 ## use in browser
 ```html
-    <script src="mi-navlog.js"></script>
+    <script src="cdn.jsdelivr.net/npm/mi-log@1.0.1/Mi-navlog.js"></script>
     <script>
         const navLog = new Log([{ style: 'circle', color: 'green', text: 'Log' }]);//optional
         navLog.l('Hello World');
