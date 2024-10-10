@@ -3,7 +3,11 @@
 //----------------------------
 //dectecte l'environnement (nodejs ou navigateur)
 function isolateMiLog(){
+let supoort256Color = true;
 const isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
+if (isNode) {
+  supoort256Color = process.env.TERM.includes('256');
+}
 //dectecte si le terminal supporte les couleurs rgb ou ascii
 
 const darkColor = [
@@ -24,6 +28,14 @@ class Log {
   colorize(color) {
     if (!isNode) {
       return { fg: 'black', bg: color };
+    }
+    if (supoort256Color) {
+      r = Math.max(0, Math.min(255, r));
+      g = Math.max(0, Math.min(255, g));
+      b = Math.max(0, Math.min(255, b));
+
+      // Génère la séquence d'échappement ANSI pour les couleurs RGB
+      return { fg: `\x1b[38;2;${r};${g};${b}m`, bg: `\x1b[40m` };
     }
     const colors = {
       reset: '\x1b[0m\x1b[40m',
@@ -59,7 +71,7 @@ class Log {
     switch (level) {
       case 'INFO':
         emoji = 'ℹ️';
-        color = this.colorize('brightBlue').fg+this.colorize('black').bg+":dodgerblue";
+        color = this.colorize('brightBlue').fg+this.colorize('black').bg+":dodgerblue"
         break;
       case 'WARN':
         emoji = '⚠️';
