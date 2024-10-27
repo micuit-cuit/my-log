@@ -38,10 +38,79 @@ class Log {
   }
 
   getStackInfo() {
-    const stack = new Error().stack.split('\n')[2]; // On change l'index à 2 car le contexte Node est différent
-    const match = stack.match(/at (.+) \((.+):(\d+):\d+\)/);
-    return match ? { func: match[1], file: match[2].split('/').pop(), line: match[3] } : { func: '', file: 'unknown', line: '0' };
+    try {
+      // Capturer la stack trace
+      const err = new Error();
+      const stack = err.stack || '';
+      
+      // Séparer la stack en lignes
+      let lines = stack.split('\n');
+      
+      // Trouver l'index de la dernière ligne contenant "log.js"
+      const logJsIndex = lines.reduce((lastIndex, line, index) => {
+        return line.includes('log.js') ? index : lastIndex;
+      }, -1);
+      
+      // Si on trouve log.js, on ne garde que les lignes après
+      if (logJsIndex !== -1) {
+        lines = lines.slice(logJsIndex + 1);
+      }
+     
+      // Si pas de stack trace après filtrage, retourner les valeurs par défaut
+      if (lines.length === 0) {
+        return { func: '', file: 'unknown', line: '0' };
+      }
+  
+      // Prendre la première ligne non vide après le filtrage
+      const callerLine = lines.find(line => line.trim()) || '';
+      
+      // Patterns pour Chrome/Node.js
+      const chromePatterns = [
+        // Format: "at Function (file:line:column)"
+        /^\s*at\s+([^\s]+)\s+\(([^:]+):(\d+):\d+\)$/,
+        // Format: "at file:line:column"
+        /^\s*at\s+([^:]+):(\d+):\d+$/
+      ];
+      
+      // Tester d'abord le pattern avec nom de fonction
+      let match = callerLine.match(chromePatterns[0]);
+      if (match) {  
+        return {
+          func: match[1] || '',
+          file: match[2].split('/').pop() || 'unknown',
+          line: match[3] || '0'
+        };
+      }
+      
+      // Tester ensuite le pattern sans nom de fonction
+      match = callerLine.match(chromePatterns[1]);
+      if (match) {
+        return {
+          func: '',
+          file: match[1].split('/').pop() || 'unknown',
+          line: match[2] || '0'
+        };
+      }
+  
+      // Si aucun pattern ne correspond
+      return {
+        func: '',
+        file: callerLine.split('/').pop().split(':')[0] || 'unknown',
+        line: callerLine.split('/').pop().split(':')[1] || '0'
+      };
+    } catch (e) {
+      console.error('Erreur dans getStackInfo:', e);
+      // En cas d'erreur, retourner les valeurs par défaut
+      return {
+        func: '',
+        file: 'unknown',
+        line: '0'
+      };
+    }
   }
+  
+
+  
   colorize(color) {
     if (!isNode) {
       return { fg: 'black', bg: color };
@@ -157,13 +226,8 @@ class Log {
       console.log(style.join(' '), ...args2, this.colorize('reset'));
     }else{
       for (let i = 0; i < prefixes.length; i++) {
-        if (!prefixes[i].style == "circle<") {
-          style.push(`background: ${prefixes[i].color}; color: ${darkColor.includes(prefixes[i].color) ? "white" : "black"}; font-weight: bold; border-radius: 5px;`);
-          style.push("["+prefixes[i].text+"]");
-        }else{
-          style.push(`background: ${prefixes[i].color};  color: ${darkColor.includes(prefixes[i].color) ? "white" : "black"}; font-weight: bold; border-radius: 3px;`);
-          style.push("("+prefixes[i].text+")");
-        }
+        style.push(`background: ${prefixes[i].color}; color: ${darkColor.includes(prefixes[i].color) ? "white" : "black"}; font-weight: bold; border-radius: 2px; padding: 0 5px;`);
+        style.push(prefixes[i].text);
         style.push("");
         if (typeof prefixes[i].text == "object") {
           message += "%c%O%c ";
